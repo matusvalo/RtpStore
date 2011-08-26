@@ -53,6 +53,7 @@ struct rtp_stream {
 	pthread_t *rtp_executor;				/**< thread that handles stream*/
 	pthread_mutex_t stream_mutex;			/**< locking mutex to access stream_info*/
 	struct rtp_stream_info stream_info;		/**< informations about stream*/
+	double first_rtp;						/**< time of the first rtp packet, if first rtp packet was not received, has value -1*/
 };
 
 /**

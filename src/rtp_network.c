@@ -26,7 +26,6 @@
  * Module of network implementation.
  */
 
-static double first_rtp = -1;
 
 //Sets sockets of session to no blocking mode.
 static int set_socks_nonblock(struct rtp_session *session)
@@ -220,13 +219,13 @@ static off64_t packet_handler(struct timeval now, int is_rtcp, RD_buffer_t *pack
 	int	hlen;   								/* header length */
 	int	offset;
 
-	if((first_rtp == -1) && (!is_rtcp)) {
-		first_rtp = dnow - 3;
-		if(first_rtp < 0) first_rtp = 0;
+	if((stream->first_rtp == -1) && (!is_rtcp)) {
+		stream->first_rtp = dnow - 3;
+		if(stream->first_rtp < 0) stream->first_rtp = 0;
 	}
 
 	hlen = is_rtcp ? len : parse_header(packet->p.data);
-	offset = (int)((dnow - first_rtp) * 1000);
+	offset = (int)((dnow - stream->first_rtp) * 1000);
 	packet->p.hdr.offset = htonl(offset);
 	packet->p.hdr.plen = is_rtcp ? 0 : htons(len);
 
@@ -235,7 +234,7 @@ static off64_t packet_handler(struct timeval now, int is_rtcp, RD_buffer_t *pack
 		len = hlen + TRUNC;
 	packet->p.hdr.length = htons(len + sizeof(packet->p.hdr));
 
-	if(first_rtp >= 0) {
+	if(stream->first_rtp >= 0) {
 		if(is_rtcp) {
 			if(rtcp_packet_filter(packet->p.data, len) != 0)
 				return rtp_write_packet(stream_type, packet, len + sizeof(packet->p.hdr), stream);

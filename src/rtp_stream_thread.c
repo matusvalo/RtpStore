@@ -72,6 +72,8 @@ static struct rtp_stream *create_stream(void)
 	stream->stream_info.downloaded_data_size = 0;
 	stream->stream_info.rtp_stream_state = RTP_INITIALIZING;
 
+	stream->first_rtp = -1;
+
 	rtp_print_log(RTP_DEBUG, "Rtp stream created\n");
 	return stream;
 }
