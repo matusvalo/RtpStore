@@ -92,6 +92,6 @@ int rtp_close_stream_output(struct rtp_stream *stream);
  *\param len Length of the packet.
  *\param stream Stream that packet belongs to.
  */
-off64_t rtp_write_packet(rtp_session_type_t stream_type, RD_buffer_t *packet, int len, struct rtp_stream *stream);
+int rtp_write_packet(rtp_session_type_t stream_type, RD_buffer_t *packet, int len, struct rtp_stream *stream);
 
 #endif /* RTP_FOUTPUT_H_ */

@@ -65,13 +65,19 @@ int rtp_create_stream_output(struct rtp_stream *stream, char *file_path)
 	return open_file(stream);
 }
 
-off64_t rtp_write_packet(rtp_session_type_t stream_type, RD_buffer_t *packet, int len, struct rtp_stream *stream)
+int rtp_write_packet(rtp_session_type_t stream_type, RD_buffer_t *packet, int len, struct rtp_stream *stream)
 {
 	stream_type == RTP_VIDEO ? fprintf(stream->output_file, "V") : fprintf(stream->output_file, "A");
 
-	off64_t wlen = fwrite((void *)packet, len, 1, stream->output_file) ; //???? WTF + 1 because 'A'/'V' was also written
+	int items = fwrite((void *)packet, len, 1, stream->output_file) ; //???? WTF + 1 because 'A'/'V' was also written
+	if(items < 1) {
+		if(ferror(stream->output_file)) {
+			rtp_print_log(RTP_WARN, "Writing packet to file failed.\n");
+			clearerr(stream->output_file);
+		}
+	}
 
-	return wlen;
+	return items;
 }
 
 int rtp_init_stream_output(struct rtp_stream *stream, char *addr, uint16_t port)

@@ -212,7 +212,7 @@ static inline int rtp_packet_filter(char *buf, int len)
 	return 0;
 }
 
-static off64_t packet_handler(struct timeval now, int is_rtcp, RD_buffer_t *packet, int len,
+static int packet_handler(struct timeval now, int is_rtcp, RD_buffer_t *packet, int len,
 						rtp_session_type_t stream_type, struct rtp_stream *stream)
 {
 	double dnow = tdbl(&now);
@@ -254,7 +254,10 @@ ssize_t read_from_sock(int sockfd, rtp_session_type_t session_type, int is_rtcp,
 	RD_buffer_t packet;
 	gettimeofday(&now, 0);
 	len = recv(sockfd, packet.p.data, sizeof(packet.p.data), 0);	//v originale recvfrom
-	//TODO:kontrola, ci len = -1 -> chyba.
+	if(len == -1) {
+		rtp_print_log(RTP_WARN, "recv() failed with errno %s\n", strerror(errno));
+		return 0;
+	}
 
 	packet_handler(now, is_rtcp, &packet, len, session_type, stream);
 	return len;
