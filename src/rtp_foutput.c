@@ -22,12 +22,10 @@
 //Opens new file for writing RTP stream into.
 static inline int open_file(struct rtp_stream *stream)
 {
-   char current_filename[100]; 	//name of file which is currently being written, 40 should be enough
-
 	FILE *output = fopen64(stream->file_name, "w"); 			//for support files larger then 2 GB
-	rtp_print_log(RTP_DEBUG, "Opening next file for stream. File name : %s \n", current_filename);
+	rtp_print_log(RTP_DEBUG, "Opening output file for stream. File name : %s \n", stream->file_name);
 	if (output == NULL) {										//for fopen64, must be compiled with -D_LARGEFILE64_SOURCE
-		rtp_print_log(RTP_ERROR, "Opening file:%s, failed:%s\n", current_filename, strerror(errno));
+		rtp_print_log(RTP_ERROR, "Opening file:%s, failed:%s\n", stream->file_name, strerror(errno));
 		return -1;
 	}
 
