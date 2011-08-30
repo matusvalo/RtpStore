@@ -284,26 +284,15 @@ static inline int set_noblock_fd(int fd)
 	return -1;
 }
 
-//Handler of SIGQUIT of log thread.
-static void sighandler(int sig)
+static inline int handle_log(void)
 {
-	log_thread_state = ENDING;
-	set_noblock_fd(pipefd[PIPE_READ]);
-}
-
-//Handler of logging thread. It reads logs from pipe log them by function log_msg().
-//parameter attr is not used. It returns nothing.
-static void *rtp_log_thread(void *attr)
-{
-	signal(SIGQUIT, sighandler);
-	while(1) {
 		rtp_log_level_t log_level = RTP_OFF;
 		unsigned int msg_len = 0;
 
 		int retval = get_log_header(&msg_len, &log_level);
 		int err = errno;
 		if(retval == -1 && err == EAGAIN)
-			break;
+			return -1;
 
 		char *msg = (char *) malloc(sizeof(char) * msg_len);
 		if(get_log(msg, msg_len) != -1) {
@@ -311,7 +300,29 @@ static void *rtp_log_thread(void *attr)
 		}
 		if(msg != NULL)
 			free(msg);
+		return 0;
+}
+
+//clean-up handler of log thread.
+static void on_cancel(void *data)
+{
+	log_thread_state = ENDING;
+	set_noblock_fd(pipefd[PIPE_READ]);
+	int ret_val = 0;
+	do {
+		ret_val = handle_log();
+	} while(ret_val == 0);
+}
+
+//Handler of logging thread. It reads logs from pipe log them by function log_msg().
+//parameter attr is not used. It returns nothing.
+static void *rtp_log_thread(void *attr)
+{
+	pthread_cleanup_push(on_cancel, NULL)
+	while(1) {
+		handle_log();
 	}
+	pthread_cleanup_pop(1);
 	return NULL;
 }
 
@@ -441,7 +452,7 @@ static inline void rtp_close_log_thread()
 	if(log_thread == NULL)
 		return;
 
-	pthread_kill(*log_thread, SIGQUIT);
+	pthread_cancel(*log_thread);
 	pthread_join(*log_thread, &foo);
 
 	free(log_thread);
@@ -454,6 +465,7 @@ static inline void rtp_close_log_thread()
 void rtp_close_remote_log(void)
 {
 	//must be first, because of turning off writing logs to the pipe
+	if(remote_log_levels == RTP_OFF) return;
 	remote_log_levels = RTP_OFF;
 
 	if(log_levels == RTP_OFF)
@@ -468,6 +480,7 @@ void rtp_close_remote_log(void)
 void rtp_close_log(void)
 {
 	//must be first, because of turning off writing logs to the pipe
+	if(log_levels == RTP_OFF) return;
 	log_levels = RTP_OFF;
 
 	if(remote_log_levels == RTP_OFF)

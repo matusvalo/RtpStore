@@ -141,17 +141,16 @@ static inline ssize_t read_from_fds(fd_set *readfds, struct rtp_stream *stream)
 	return downloaded_size;
 }
 
-//Handler of signal SIGQUIT that will be called on canceling thread.
-static void on_cancel(int sig)
+//Clean-up Handler that will be called on canceling thread.
+static void on_cancel(void *data)
 {
-	pthread_exit(NULL);
+	return;
 }
 
 //Execution handler of stream.
 static void *rtp_stream_handler(void *param)
 {
 	struct rtp_stream *stream = (struct rtp_stream *) param;
-	signal(SIGQUIT, on_cancel);
 
 	//Start time of last synchronizing part.
 	struct timeval select_timeout = {
@@ -166,6 +165,9 @@ static void *rtp_stream_handler(void *param)
 	gettimeofday(&start_time, NULL);
 	rtp_print_log(RTP_DEBUG, "Starting main loop of stream\n");
 	double speed = 0;										//speed in kb/s
+
+	pthread_cleanup_push(on_cancel, NULL);
+
 	while(1) {
 		fd_set readfds;
 		int maxfds = init_select(&readfds, stream);
@@ -193,6 +195,8 @@ static void *rtp_stream_handler(void *param)
 		stream->stream_info.download_speed = speed;
 		pthread_mutex_unlock(&(stream->stream_mutex));					//out crit. section
 	}
+
+	pthread_cleanup_pop(1);
 
 	return NULL;
 }
@@ -232,7 +236,7 @@ void rtp_stream_close(struct rtp_stream *stream)
 {
 	if(stream == NULL) return;
 	if(stream->rtp_executor != NULL) {
-		pthread_kill(*(stream->rtp_executor), SIGQUIT);
+		pthread_cancel(*(stream->rtp_executor));
 		void *foo = NULL;
 		if(pthread_join(*(stream->rtp_executor), &foo) == -1 && errno == EDEADLK)
 			pthread_kill(*(stream->rtp_executor), SIGKILL);		//killing thread in deadlock
