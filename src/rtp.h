@@ -51,7 +51,7 @@ typedef enum {
     RTCP_SDES_NOTE  = 7,
     RTCP_SDES_PRIV  = 8,
     //updated by Juro 1Jan2005 according to current IANA assignments:
-    //http://www.iana.org/assignments/rtp-parameters        
+    //http://www.iana.org/assignments/rtp-parameters
     RTCP_SDES_H323_CADDR = 9,
     // next 2 items temporarily added by Juro on 1 January 2005 - maybe won't be used
     RTCP_SDES_ANY = 11,

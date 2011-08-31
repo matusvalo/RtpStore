@@ -37,7 +37,7 @@ int rtp_init_remote_log(const char *ip, uint16_t port, rtp_log_level_t levels);
  */
 #ifdef __GNUC__
 #define rtp_print_log(log_level, message, ...) __rtp_print_log(log_level, (char *)__FUNCTION__, \
-												message, ##__VA_ARGS__)
+                                                               message, ##__VA_ARGS__)
 #endif
 
 /**

@@ -17,11 +17,11 @@
  * Enumeration that represents states of RTP stream.
  */
 typedef enum {
-	RTP_FAILED = 0,					/**< error occured during finding out stream state*/
-	RTP_INITIALIZING = 1,			/**< Stream is initializing*/
-	RTP_RECORDING = 2, 				/**< stream is recording*/
-	RTP_WAITING = 3, 				/**< Stream is waiting for data on network*/
-	RTP_ENDED = 4					/**< stream has ended*/
+    RTP_FAILED = 0,                 /**< error occured during finding out stream state*/
+    RTP_INITIALIZING = 1,           /**< Stream is initializing*/
+    RTP_RECORDING = 2,              /**< stream is recording*/
+    RTP_WAITING = 3,                /**< Stream is waiting for data on network*/
+    RTP_ENDED = 4                   /**< stream has ended*/
 } rtp_stream_state_t;
 
 /**
@@ -33,13 +33,13 @@ typedef enum {
  * Enumeration that represents level of logging.
  */
 typedef enum {
-	RTP_DEBUG = 1 << 0,		/**<Debugging informations only*/		//1
-	RTP_INFO = 1 << 1,		/**<Information logs only*/			//2
-	RTP_WARN = 1 << 2,		/**<Warning logs only*/				//4
-	RTP_ERROR = 1 << 3,		/**<Error logs only*/				//8
-	RTP_FATAL = 1 << 3,		/**<Fatal Error logs only*/			//8
-	RTP_OFF = 0,			/**<Logging off*/				//0
-	RTP_ALL = INT_MAX		/**<All logs*/ 					//pole 1-tiek
+    RTP_DEBUG = 1 << 0,     /**<Debugging informations only*/       //1
+    RTP_INFO = 1 << 1,      /**<Information logs only*/             //2
+    RTP_WARN = 1 << 2,      /**<Warning logs only*/                 //4
+    RTP_ERROR = 1 << 3,     /**<Error logs only*/                   //8
+    RTP_FATAL = 1 << 3,     /**<Fatal Error logs only*/             //8
+    RTP_OFF = 0,            /**<Logging off*/                       //0
+    RTP_ALL = INT_MAX       /**<All logs*/                          //pole 1-tiek
 } rtp_log_level_t;
 
 /**
@@ -114,7 +114,7 @@ void rtp_store_init(void);
  * \return ID of created RTP stream on success, -1 otherwise.
  */
 int rtp_store_create_stream(char *ip, uint16_t video_port, uint16_t audio_port,
-						   char *file_path);
+                            char *file_path);
 
 /**
  * Closes and frees all resources of RTP stream

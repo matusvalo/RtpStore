@@ -9,7 +9,7 @@
 #ifndef RTP_FOUTPUT_H_
 #define RTP_FOUTPUT_H_
 
-#include <bits/time.h>			//struct timeval
+#include <bits/time.h>          //struct timeval
 #include <stdint.h>
 #include <stdio.h>
 #include "rtp_stream_thread.h"
@@ -37,26 +37,25 @@
 #define RTPFILE_VERSION "2.0"
 
 typedef struct {
-  struct timeval start;  /* start of recording (GMT) */
-  uint32_t source;        /* network source (multicast address) */
-  uint16_t port;          /* UDP port */
+    struct timeval start;   /* start of recording (GMT) */
+    uint32_t source;        /* network source (multicast address) */
+    uint16_t port;          /* UDP port */
 } RD_hdr_t;
 
 typedef struct {
-  uint16_t length;    /* length of packet, including this header (may
-                        be smaller than plen if not whole packet recorded) */
-  uint16_t plen;      /* actual header+payload length for RTP, 0 for RTCP */
-  uint32_t offset;    /* milliseconds since the start of recording */
+    uint16_t length;    /* length of packet, including this header (may
+                           be smaller than plen if not whole packet recorded) */
+    uint16_t plen;      /* actual header+payload length for RTP, 0 for RTCP */
+    uint32_t offset;    /* milliseconds since the start of recording */
 } RD_packet_t;
 
 typedef union
 {
-  struct
-  {
-    RD_packet_t hdr;
-    char data[8000];
-  } p;
-  char byte[8192];
+    struct {
+        RD_packet_t hdr;
+        char data[8000];
+    } p;
+    char byte[8192];
 } RD_buffer_t;
 
 
