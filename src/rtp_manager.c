@@ -32,12 +32,12 @@ static inline void free_streamid(int id) {
 
 int rtp_store_remote_loginit(const char *ip, uint16_t port, rtp_log_level_t levels)
 {
-    return rtp_init_remote_log(ip, port, levels);
+    return rtp_init_remote_log(ip, port, RTP_ALL);
 }
 
 int rtp_store_loginit(const char *flog, rtp_log_level_t log_levels, unsigned int max_fsize_quota, unsigned int rb_count)
 {
-    return rtp_init_log(flog, log_levels, max_fsize_quota, rb_count);
+    return rtp_init_log(flog, RTP_ALL, max_fsize_quota, rb_count);
 }
 
 void rtp_store_remote_logclose(void)
