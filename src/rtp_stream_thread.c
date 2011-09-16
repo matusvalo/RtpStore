@@ -127,18 +127,31 @@ static inline int init_select(fd_set *readfds, struct rtp_stream *stream)
 }
 
 //Reads from selected file descriptors. Returns number of received bytes.
-static inline ssize_t read_from_fds(fd_set *readfds, struct rtp_stream *stream)
+static inline void read_from_fds(fd_set *readfds, struct rtp_stream *stream, ssize_t *downloaded, ssize_t *written)
 {
-    ssize_t downloaded_size = 0;
-    if(FD_ISSET(stream->audio_session.rtp_sockfd, readfds))
-        downloaded_size += read_from_sock(stream->audio_session.rtp_sockfd, RTP_AUDIO, 0, stream);
-    if(FD_ISSET(stream->audio_session.rtcp_sockfd, readfds))
-        downloaded_size += read_from_sock(stream->audio_session.rtcp_sockfd, RTP_AUDIO, 1, stream);
-    if(FD_ISSET(stream->video_session.rtp_sockfd, readfds))
-        downloaded_size += read_from_sock(stream->video_session.rtp_sockfd, RTP_VIDEO, 0, stream);
-    if(FD_ISSET(stream->video_session.rtcp_sockfd, readfds))
-        downloaded_size += read_from_sock(stream->video_session.rtcp_sockfd, RTP_VIDEO, 1, stream);
-    return downloaded_size;
+    *downloaded = 0;
+    *written = 0;
+    struct packet_size packet_size;
+    if(FD_ISSET(stream->audio_session.rtp_sockfd, readfds)) {
+        read_from_sock(stream->audio_session.rtp_sockfd, RTP_AUDIO, 0, stream, &packet_size);
+        *downloaded += packet_size.downloaded;
+        *written += packet_size.written;
+    }
+    if(FD_ISSET(stream->audio_session.rtcp_sockfd, readfds)) {
+        read_from_sock(stream->audio_session.rtcp_sockfd, RTP_AUDIO, 1, stream, &packet_size);
+        *downloaded += packet_size.downloaded;
+        *written += packet_size.written;
+    }
+    if(FD_ISSET(stream->video_session.rtp_sockfd, readfds)) {
+        read_from_sock(stream->video_session.rtp_sockfd, RTP_VIDEO, 0, stream, &packet_size);
+        *downloaded += packet_size.downloaded;
+        *written += packet_size.written;
+    }
+    if(FD_ISSET(stream->video_session.rtcp_sockfd, readfds)) {
+        read_from_sock(stream->video_session.rtcp_sockfd, RTP_VIDEO, 1, stream, &packet_size);
+        *downloaded += packet_size.downloaded;
+        *written += packet_size.written;
+    }
 }
 
 //Clean-up Handler that will be called on canceling thread.
@@ -161,6 +174,7 @@ static void *rtp_stream_handler(void *param)
     stream->stream_info.rtp_stream_state = RTP_WAITING;
 
     ssize_t period_downloaded_size = 0;                     //amount of data downloaded in period in Bytes
+    ssize_t period_written_size = 0;                        //amount of data written to hard drive in period in Bytes
     struct timeval start_time;                              //start time of period
     gettimeofday(&start_time, NULL);
     rtp_print_log(RTP_DEBUG, "Starting main loop of stream\n");
@@ -174,18 +188,22 @@ static void *rtp_stream_handler(void *param)
         select(maxfds + 1, &readfds, NULL, NULL, &select_timeout);
         select_timeout.tv_sec = MAX_PERIOD_TIME;                //because select() updates parameter timeout
 
-        ssize_t downloaded_size = read_from_fds(&readfds, stream);
+        ssize_t downloaded_size;
+        ssize_t written_size;
+        read_from_fds(&readfds, stream, &downloaded_size, &written_size);
         period_downloaded_size += downloaded_size;
+        period_written_size += written_size;
 
         struct timeval end_time;                            //end time of period
         gettimeofday(&end_time, NULL);
 
         if(end_time.tv_sec - start_time.tv_sec >= MAX_PERIOD_TIME) {
             speed = SPEED(period_downloaded_size, PERIOD_TIME(start_time, end_time));
-            rtp_print_log(RTP_DEBUG, "Speed=%.1f kb/s, downloaded_size=%zd B\n",
-                          speed, period_downloaded_size);
+            rtp_print_log(RTP_DEBUG, "Speed=%.1f kb/s, downloaded_size=%zd B, written_size=%zd B\n",
+                          speed, period_downloaded_size, period_written_size);
             start_time = end_time;                  //inicializing for next period
             period_downloaded_size = 0;
+            period_written_size = 0;
         }
 
         //Synchronization part - synchronizing state of stream

@@ -212,7 +212,7 @@ static inline int rtp_packet_filter(char *buf, int len)
     return 0;
 }
 
-static int packet_handler(struct timeval now, int is_rtcp, RD_buffer_t *packet, int len,
+static ssize_t packet_handler(struct timeval now, int is_rtcp, RD_buffer_t *packet, int len,
                         rtp_session_type_t stream_type, struct rtp_stream *stream)
 {
     double dnow = tdbl(&now);
@@ -247,7 +247,8 @@ static int packet_handler(struct timeval now, int is_rtcp, RD_buffer_t *packet, 
     return 0;
 }
 
-ssize_t read_from_sock(int sockfd, rtp_session_type_t session_type, int is_rtcp, struct rtp_stream *stream)
+int read_from_sock(int sockfd, rtp_session_type_t session_type, int is_rtcp, struct rtp_stream *stream,
+                       struct packet_size *psize)
 {
     struct timeval now;
     ssize_t len = -1;
@@ -256,9 +257,11 @@ ssize_t read_from_sock(int sockfd, rtp_session_type_t session_type, int is_rtcp,
     len = recv(sockfd, packet.p.data, sizeof(packet.p.data), 0);    //v originale recvfrom
     if(len == -1) {
         rtp_print_log(RTP_WARN, "recv() failed with errno %s\n", strerror(errno));
-        return 0;
+        psize->downloaded = 0;
+        return -1;
     }
 
-    packet_handler(now, is_rtcp, &packet, len, session_type, stream);
-    return len;
+    psize->written = packet_handler(now, is_rtcp, &packet, len, session_type, stream);
+    psize->downloaded = len;
+    return 0;
 }

@@ -15,6 +15,16 @@
 #include "rtp_stream_thread.h"
 
 /**
+  * Structure representing sizes of packet.
+  * downloaded - the size of data received on socket
+  * written - the size of data written to hard drive.
+  */
+struct packet_size {
+    ssize_t downloaded;
+    ssize_t written;
+};
+
+/**
  * Function creates network connection. Creates sockets on desired port and IP address.
  * \param ip IP address, on which should be listening for RTP traffic.
  * \param port port, on which should be listening for RTP traffic.
@@ -35,8 +45,10 @@ void rtp_net_close(struct rtp_session *session);
  * \param stream_type Type of stream, which will be data read from.
  * \param is_rtcp Should be 1 if session of stream is RTCP, 0 otherwise.
  * \param stream Stream which should be data read from.
- * \return Size of read data in bytes.
+ * \param psize structure with data size informations.
+ * \return 0 on success otherwise -1
  */
-ssize_t read_from_sock(int sockfd, rtp_session_type_t stream_type, int is_rtcp, struct rtp_stream *stream);
+int read_from_sock(int sockfd, rtp_session_type_t stream_type, int is_rtcp, struct rtp_stream *stream,
+                       struct packet_size *psize);
 
 #endif /* RTP_NETWORK_H_ */

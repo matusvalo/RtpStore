@@ -63,7 +63,7 @@ int rtp_create_stream_output(struct rtp_stream *stream, char *file_path)
     return open_file(stream);
 }
 
-int rtp_write_packet(rtp_session_type_t stream_type, RD_buffer_t *packet, int len, struct rtp_stream *stream)
+ssize_t rtp_write_packet(rtp_session_type_t stream_type, RD_buffer_t *packet, int len, struct rtp_stream *stream)
 {
     stream_type == RTP_VIDEO ? fprintf(stream->output_file, "V") : fprintf(stream->output_file, "A");
 
@@ -75,7 +75,7 @@ int rtp_write_packet(rtp_session_type_t stream_type, RD_buffer_t *packet, int le
         }
     }
 
-    return items;
+    return items * len;
 }
 
 int rtp_init_stream_output(struct rtp_stream *stream, char *addr, uint16_t port)
