@@ -11,6 +11,7 @@
 #include "log.h"
 
 #define MAX_STREAMS 100
+#define VERSION "7a72c53ae2b1ff97c0a9f155a2514c2fa1437e42"
 
 static struct rtp_stream *streams[MAX_STREAMS];
 
@@ -55,7 +56,7 @@ void rtp_store_init(void)
     int i;
     for(i = 0; i < MAX_STREAMS; i++)
         streams[i] = NULL;
-    rtp_print_log(RTP_INFO, "RtpStore initialized.\n");
+    rtp_print_log(RTP_INFO, "RtpStore initialized. Version %s\n", VERSION);
 }
 
 int rtp_store_create_stream(char *ip, uint16_t video_port, uint16_t audio_port,
