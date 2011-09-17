@@ -11,7 +11,7 @@
 #include "log.h"
 
 #define MAX_STREAMS 100
-#define VERSION "7a72c53ae2b1ff97c0a9f155a2514c2fa1437e42"
+#define VERSION "38855f022a714fe9e3677ccc3dd00517f2201966"
 
 static struct rtp_stream *streams[MAX_STREAMS];
 
