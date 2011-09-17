@@ -42,7 +42,7 @@ static inline int close_file(struct rtp_stream *stream)
         if(retval == 0)
             rtp_print_log(RTP_DEBUG, "Output file %s on stream closed\n", stream->file_name);
         else
-            rtp_print_log(RTP_ERROR, "Closing file failed with errno %s", strerror(errno));
+            rtp_print_log(RTP_ERROR, "Closing file failed with errno %s\n", strerror(errno));
         return retval;
     }
     return 0;
