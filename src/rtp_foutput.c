@@ -37,9 +37,14 @@ static inline int open_file(struct rtp_stream *stream)
 //Closes output file given by struct stream.
 static inline int close_file(struct rtp_stream *stream)
 {
-    rtp_print_log(RTP_DEBUG, "Output file (FD=%d) on stream closed\n", stream->output_file);
-    if(stream->output_file != NULL)
-        return fclose(stream->output_file);
+    if(stream->output_file != NULL) {
+        int retval = fclose(stream->output_file);
+        if(retval == 0)
+            rtp_print_log(RTP_DEBUG, "Output file %s on stream closed\n", stream->file_name);
+        else
+            rtp_print_log(RTP_ERROR, "Closing file failed with errno %s", strerror(errno));
+        return retval;
+    }
     return 0;
 }
 
